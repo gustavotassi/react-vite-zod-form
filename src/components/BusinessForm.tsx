@@ -1,20 +1,28 @@
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
-interface PersonContract {
-  firstName: string;
-  lastName?: string;
-  email: string;
-}
+const businessFormSchema = z.object({
+  businessName: z.string(),
+  website: z.string().nullable(),
+  taxId: z
+    .string()
+    .min(14, 'O tamanho mínimo para esse campo é de 14 caracteres!'),
+});
 
-export function PersonForm() {
+type BusinessFormContract = z.infer<typeof businessFormSchema>;
+
+export function BusinessForm() {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PersonContract>();
+  } = useForm<BusinessFormContract>({
+    resolver: zodResolver(businessFormSchema),
+  });
 
-  function onSubmitForm(e: PersonContract) {
+  function onSubmitForm(e: BusinessFormContract) {
     console.log(e);
 
     reset();
@@ -22,47 +30,48 @@ export function PersonForm() {
 
   return (
     <div className="flex flex-col gap-2">
-      <h1 className="font-bold text-xl">Dados Cadastrais - Cliente</h1>
+      <h1 className="font-bold text-xl">Dados Cadastrais - Empresa</h1>
 
       <form
-        name="person"
+        name="business"
         onSubmit={handleSubmit(onSubmitForm)}
         className="w-full flex flex-col"
       >
         <label className="flex flex-col mb-4">
-          Primeiro nome
+          Razão social
           <input
             type="text"
-            id="firstName"
+            id="businessName"
             className="p-3 rounded-lg bg-zinc-800 placeholder:text-zinc-400 focus:outline-none"
-            {...register('firstName', { required: true })}
+            {...register('businessName', { required: true })}
           />
-          {errors.firstName && (
+          {errors.businessName?.message && (
             <span className="text-red-400">Esse campo é obrigatório!</span>
           )}
         </label>
 
         <label className="flex flex-col mb-4">
-          Último nome
+          Website
           <input
-            type="text"
-            id="lastName"
+            type="url"
+            id="website"
+            placeholder="ex.: https://mywebsite.com"
             className="p-3 rounded-lg bg-zinc-800 placeholder:text-zinc-400 focus:outline-none"
-            {...register('lastName')}
+            {...register('website')}
           />
         </label>
 
         <label className="flex flex-col mb-4">
-          E-mail
+          CNPJ
           <input
-            type="email"
-            id="email"
-            placeholder="ex.: email@example.com"
+            type="text"
+            id="taxId"
+            placeholder="Apenas números!"
             className="p-3 rounded-lg bg-zinc-800 placeholder:text-zinc-400 focus:outline-none"
-            {...register('email', { required: true })}
+            {...register('taxId', { required: true })}
           />
-          {errors.email && (
-            <span className="text-red-400">Esse campo é obrigatório!</span>
+          {errors.taxId?.message && (
+            <span className="text-red-400">{errors.taxId?.message}</span>
           )}
         </label>
 
